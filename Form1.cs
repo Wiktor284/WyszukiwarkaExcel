@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.IO;
 using System.Text;
@@ -149,8 +149,8 @@ namespace WyszukiwarkaExcel
         {
             if (_tabelaOryginalna == null) return;
 
-            // Usuwamy polskie znaki z wpisanej frazy i przycinamy spacje
-            string fraza = UsunPolskieZnaki(txtSzukaj.Text.Trim());
+            //normalizacja frazy: polskie znaki, interpunkcja, wielkosc liter
+            string fraza = NormalizujDoWyszukiwania(txtSzukaj.Text.Trim());
             
             if (string.IsNullOrEmpty(fraza))
             {
@@ -167,8 +167,7 @@ namespace WyszukiwarkaExcel
                 {
                     if (komorka != null)
                     {
-                        // Usuwamy polskie znaki z tekstu w komórce przed porównaniem
-                        string tekstKomorki = UsunPolskieZnaki(komorka.ToString());
+                        string tekstKomorki = NormalizujDoWyszukiwania(komorka.ToString());
 
                         if (tekstKomorki.Contains(fraza))
                         {
@@ -185,6 +184,24 @@ namespace WyszukiwarkaExcel
             }
 
             dgvWyniki.DataSource = _tabelaFiltrowana;
+        }
+
+        private string NormalizujDoWyszukiwania(string tekst)
+        {
+            if (string.IsNullOrEmpty(tekst)) return "";
+
+            string bezPolskichZnakow = UsunPolskieZnaki(tekst);
+            var wynik = new StringBuilder(bezPolskichZnakow.Length);
+
+            foreach (char znak in bezPolskichZnakow)
+            {
+                if (!char.IsPunctuation(znak) && !char.IsSymbol(znak))
+                {
+                    wynik.Append(znak);
+                }
+            }
+
+            return wynik.ToString();
         }
 
         private string UsunPolskieZnaki(string tekst)
